@@ -1,6 +1,8 @@
+%bcond_with ecore
+
 Name:           dbus-c++
 Version:        0.9.0
-Release:        20
+Release:        21
 Summary:        Native C++ bindings for D-Bus
 License:        LGPLv2+
 URL:            http://sourceforge.net/projects/dbus-cplusplus/
@@ -12,9 +14,14 @@ Patch0003:      dbus-c++-macro_collision.patch
 Patch0004:      dbus-c++-threading.patch
 Patch0005:      dbus-c++-writechar.patch
 
-BuildRequires:  gcc-c++ dbus-devel glib2-devel gtkmm24-devel autoconf automake libtool expat-devel ecore-devel
-Provides:       %{name}-ecore = %{version}-%{release} %{name}-glib = %{version}-%{release}
-Obsoletes:      %{name}-ecore < %{version}-%{release} %{name}-glib < %{version}-%{release}
+BuildRequires:  gcc-c++ dbus-devel glib2-devel gtkmm24-devel autoconf automake libtool expat-devel
+%if %{with ecore}
+BuildRequires: ecore-devel
+Provides:       %{name}-ecore = %{version}-%{release}
+Obsoletes:      %{name}-ecore < %{version}-%{release}
+%endif
+Provides:       %{name}-glib = %{version}-%{release}
+Obsoletes:      %{name}-glib < %{version}-%{release}
 
 %description
 dbus-c++ attempts to provide a C++ API for D-BUS. The library has a glib/gtk and an Ecore mainloop
@@ -34,7 +41,12 @@ sed -i 's/libtoolize --force --copy/libtoolize -if --copy/' bootstrap
 %build
 autoreconf -vfi
 export CPPFLAGS='-pthread %{optflags}' CXXFLAGS='--std=gnu++11 -pthread %{optflags}'
-%configure --disable-static
+%configure --disable-static \
+%if %{without ecore}
+           --disable-ecore
+%else
+  ;
+%endif
 %make_build
 
 %install
@@ -57,5 +69,8 @@ export CPPFLAGS='-pthread %{optflags}' CXXFLAGS='--std=gnu++11 -pthread %{optfla
 %{_libdir}/pkgconfig/*
 
 %changelog
+* Fri Mar  4 2022 lvxiaoqian <xiaoqian@nj.iscas.ac.cn> - 0.9.0-21
+- update spec for some arch doesn't require ecore-devel
+
 * Mon Dec  2 2019 lingsheng <lingsheng@huawei.com> - 0.9.0-20
 - Package init
